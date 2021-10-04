@@ -1,5 +1,4 @@
-# Node JS Zoom Clone
-
+# Node JS Collaborative Drawing Tool
 ## Usage
 ```
 npm install
