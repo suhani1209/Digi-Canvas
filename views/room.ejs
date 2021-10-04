@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script>
+      const ROOM_ID = "<%= roomId %>"
+      //console.log("room.ejs "+ROOM_ID);
+      const userName="<%= username %>"
+      //console.log("room.ejs "+userName);
+      const photo ="<%= photo %>"
+   </script>
+    <script defer src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
+    <script src="/socket.io/socket.io.js" defer></script>
+    <link rel="stylesheet" href="style_try.css">
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
+     <script src="https://kit.fontawesome.com/c939d0e917.js"></script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.3.1/fabric.min.js"></script>
+    <script src="shapes.fabric.js"></script>
+    <script src="FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.3/jspdf.min.js"></script>
+    <script src="script_try.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fontfaceobserver/2.0.4/fontfaceobserver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/1.8.349/pdf.min.js"></script>
+</head>
+<body>
+      <div class="row" style="margin-top: 0;margin-right:0;padding-right:0;--bs-gutter-x: 0rem; height:100vh;">
+        <div class="col" id="canvasWrapper" style="height:100%;" >
+         <canvas id="c"  style="position:absolute;" ></canvas>
+         <!-- <div class="dropdown" style="position:fixed;top:0;padding:10px;right:0">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+              Frame 1
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+              <li><a class="dropdown-item" href="#">Frame 1</a></li>
+              <li><a class="dropdown-item" href="#">Frame 2</a></li>
+              <li><a class="dropdown-item" href="#">Frame 3</a></li>
+            </ul>
+          </div> -->
+          <!-- <select id ="frame" name="ddl" onmousedown="this.value='';"  style="position:fixed;top:0;padding:10px;right:0">
+            <option>Frame 1</option>
+            <option>Frame 2</option>
+            <option>Frame 3</option>
+          </select> -->
+          
+         
+         <div class="btn-group-vertical bg-light rounded shadow-lg" style="position:fixed;top:0"> 
+            
+            <div class="btn-group dropend side-drop">
+               
+               <ul class="dropdown-menu">
+                  <!-- <button type="button" class="btn" ><i class="fas fa-pencil-alt"></i></button>
+                  <button type="button" class="btn" id="spray"> <i class="fas fa-spray-can"></i></button> -->
+               </ul>
+            </div>
+
+            <div class="btn-group dropend side-drop" style="position:relative; display:inline-block;width:100%">
+              <button type="button" class="btn" style="width:inherit"> <i class="fas fa-brush fa-fw fa-lg" aria-hidden="true" ></i></button>
+   
+               <ul class="dropdown-menu">
+                  <input type="range" id="brushSize" value="0" min="0" max="100">
+               </ul>
+            </div>
+            <div class="btn-group dropend side-drop" style="position:relative; display:inline-block;width:100%">
+               <button type="button" class="btn" style="width:inherit"> <i class="fas fa-palette" aria-hidden="true" ></i></button>
+    
+                <ul class="dropdown-menu">
+                  <input type="color" id="brushColor" class="dropdown-menu" style=" left:0;top:0;width:0%;">
+                </ul>
+             </div>
+             
+            <input type="file" name="" id='file' hidden>
+            <button type="button" class="btn" onclick="open_file()" ><i class="fa fa-paperclip"></i> </button>
+            
+
+            <div class="btn-group dropend side-drop" >
+               <button type="button" class="btn dropbtn"  data-bs-toggle="dropdown" aria-expanded="false"> <i class="fas fa-shapes"></i></button>
+               </button>
+               <ul class="dropdown-menu" id="toolbox">
+                  <button type="button" class="btn" id="drwToggleDrawMode"> <i class="fa fa-pencil" aria-hidden="true"></i></button>
+                  <button type="button" class="btn" id="shapeCircle"><i class="fas fa-circle"></i></button>
+                  <button type="button" class="btn" id="shapeRect"> <i class="fas fa-square"></i></button>
+                  <button type="button" class="btn" id="shapeArrow"> <svg xmlns="http://www.w3.org/2000/svg" width="50" height="23" fill="currentColor" class="bi bi-arrow-up-right" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0v-6z"/></svg></button>
+                  <button type="button" class="btn" id="shapeTri"> <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-triangle-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M7.022 1.566a1.13 1.13 0 0 1 1.96 0l6.857 11.667c.457.778-.092 1.767-.98 1.767H1.144c-.889 0-1.437-.99-.98-1.767L7.022 1.566z"/></svg></button>
+                  <button type="button" class="btn" id="shapePenta"> <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-pentagon-fill" viewBox="0 0 16 16"><path d="m8 0 8 6.5-3 9.5H3L0 6.5 8 0z"/></svg></button>
+                  <button type="button" class="btn" id="shapeHexa"> <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-hexagon-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8.5.134a1 1 0 0 0-1 0l-6 3.577a1 1 0 0 0-.5.866v6.846a1 1 0 0 0 .5.866l6 3.577a1 1 0 0 0 1 0l6-3.577a1 1 0 0 0 .5-.866V4.577a1 1 0 0 0-.5-.866L8.5.134z"/></svg></button>
+                  <button type="button" class="btn" id="shapeHepta"> <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-heptagon-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M7.779.052a.5.5 0 0 1 .442 0l6.015 2.97a.5.5 0 0 1 .267.34l1.485 6.676a.5.5 0 0 1-.093.415l-4.162 5.354a.5.5 0 0 1-.395.193H4.662a.5.5 0 0 1-.395-.193L.105 10.453a.5.5 0 0 1-.093-.415l1.485-6.676a.5.5 0 0 1 .267-.34L7.779.053z"/></svg></button>
+                  <button type="button" class="btn" id="shapeOcta"> <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-octagon-fill" viewBox="0 0 16 16"><path d="M11.107 0a.5.5 0 0 1 .353.146l4.394 4.394a.5.5 0 0 1 .146.353v6.214a.5.5 0 0 1-.146.353l-4.394 4.394a.5.5 0 0 1-.353.146H4.893a.5.5 0 0 1-.353-.146L.146 11.46A.5.5 0 0 1 0 11.107V4.893a.5.5 0 0 1 .146-.353L4.54.146A.5.5 0 0 1 4.893 0h6.214z"/></svg></button>
+                  <button type="button" class="btn" id="shapeLine"> <i class="fas fa-minus"></i></button>
+                  <button type="button" class="btn" id="shapeStar"> <i class="fas fa-star"></i></button>
+               </ul>
+            </div>
+            <button type="button" class="btn"  id="txtBox"><svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-fonts" viewBox="0 0 16 16"><path d="M12.258 3h-8.51l-.083 2.46h.479c.26-1.544.758-1.783 2.693-1.845l.424-.013v7.827c0 .663-.144.82-1.3.923v.52h4.082v-.52c-1.162-.103-1.306-.26-1.306-.923V3.602l.431.013c1.934.062 2.434.301 2.693 1.846h.479L12.258 3z"/></svg></button> 
+           
+            <div class="btn-group dropend side-drop">
+               <button type="button" class="btn dropbtn" id="shapes" data-bs-toggle="dropdown" aria-expanded="false"> <i class="fas fa-download"></i></button>
+               </button>
+               <ul class="dropdown-menu">
+                  <button type="button" class="btn"   onClick="downloadimg()"> <i class="fas fa-image"></i></button> 
+                  <button type="button" class="btn"   onClick="downloadpdf()"> <i class="fas fa-file-pdf"></i></button> 
+               </ul>
+            </div>
+            
+            <button type="button" class="btn"  id="drwEraser"> <i class="fa fa-eraser" aria-hidden="true"></i></button>  
+            <button type="button" class="btn" id="drwClearCanvas"> <i class="fa fa-trash" aria-hidden="true"></i></button>
+            
+            </div>  
+         
+      <div id="menu" style="position:fixed;bottom:0;width:inherit;">
+        <div >
+            <div class="main__controls">
+
+            <div class="main__controls__block">
+               <div onclick="muteUnmute()" class="main__controls__button main__mute_button">
+                  <i class="fas fa-microphone"></i>
+                  <span>Mute</span>
+               </div>
+               <div class="main__controls__block">
+               <div onclick="editunedit()"  class="main__controls__button main__edit__button">
+                  <i class="fas fa-edit"></i>
+                  <span>Edit</span>
+               </div>
+               
+            </div>
+            </div>
+            <div class="main__controls__block">
+               <div class="main__controls__button" onclick="share()">
+                  <i class="fas fa-share"></i>
+                  <span>Share</span>
+               </div>
+               <div class="main__controls__button" onclick="showparticipants()">
+                  <i class="fas fa-user-friends"></i>
+                  <span>Participants</span>
+               </div>
+               <div class="main__controls__button" onclick="showchat()">
+                  <i class="fas fa-comment-alt"></i>
+                  <span>Chat</span>
+               </div>
+            </div>
+            <div class="main__controls__block">
+               <div class="main__controls__button" onclick="leavemeeting()">
+                  <span class="leave_meeting">Leave Meeting</span>
+               </div>
+            </div>
+         </div>
+      </div>
+      
+      </div>
+        </div>
+        <!--frames started-->
+        <div class="col-3" id="framewrapper" style="display: none;">
+            <div class="main__right">
+        <div class="main__header">
+           <h6>Frames</h6>
+        </div>
+        <div class="main__chat_window">
+           <ul class="messages" id="frames">
+            <li class="message"><button type="button" onclick="show(1)">Frame 1</button></li>
+           </ul>
+           <button type="button" id ="addframe" class="btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i></button>
+        </div>
+        
+            </div>
+        </div> 
+        <!--frames ended-->
+        <!-- menu ended-->
+        <!-- chat started-->
+        <div class="col-3" id="chatwrapper" style="display: none;">
+        <div class="main__right">
+        <div class="main__header">
+           <div class="row" style="width:100%;height:100%;">
+              <div class="col" style="justify-content: center;text-align:center;align-items:center;margin:auto;">Chat</div>
+            </div>
+        </div>
+        <div class="main__chat_window">
+           <ul class="list-group" id="chat">
+              
+           </ul>
+
+        </div>
+        <div class="main__message_container">
+           <input id="chat_message" type="text" placeholder="Type message here...">
+        </div>
+     </div>
+       </div> <!-- chat ended-->
+       <!--participant start-->
+       <div class="col-3" id="participantwrapper" style="display: none;">
+         <div class="main__right">
+           <div class="main__header">
+            <div class="row" style="width:100%;height:100%;">
+               <div class="col" style="justify-content: center;text-align:center;align-items:center;margin:auto;">Participants</div>
+             </div>
+           </div>
+           <div class="main__chat_window">
+              <ul class="list-group" id="participants">
+                 
+              </ul>
+   
+           </div>
+           
+        </div>
+      </div> 
+      <!--participant ends-->
+       
+    </div>
+   
+    <div class="main__videos">
+      <div id="video-grid">
+
+      </div>
+   </div>
+   <script>
+      function open_file(){
+         document.getElementById('file').click();
+     }
+   </script>
+</body>
+</html>
